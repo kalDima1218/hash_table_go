@@ -1,0 +1,84 @@
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+type hashtable struct{
+	load, size int
+	val, t []int
+}
+
+func newHashtable(size int) *hashtable{
+	var tmp hashtable
+	tmp.size, tmp.load = size, 0
+	tmp.val, tmp.t = make([]int, size), make([]int, size)
+	return &tmp
+}
+
+func h1(x, size int) int{
+	return x % size
+}
+
+func h2(x, size int) int{
+	return 1 + x % (size - 2)
+}
+
+func insert(mp *hashtable, x, cnt int){
+	var i = h1(int(math.Abs(float64(x))), mp.size)
+	var d = h2(int(math.Abs(float64(x))), mp.size)
+	for mp.t[i] > 0{
+		if mp.val[i] == x{
+			mp.t[i]+=cnt
+			return
+		}
+		i = (i + d)%mp.size
+	}
+	mp.t[i] = cnt
+	mp.val[i] = x
+	mp.load++
+}
+
+func count(mp *hashtable, x int) int{
+	var i = h1(int(math.Abs(float64(x))), mp.size)
+	var d = h2(int(math.Abs(float64(x))), mp.size)
+	for mp.t[i] > 0{
+		if mp.val[i] == x{
+			return mp.t[i]
+		}
+		i = (i + d) % mp.size
+	}
+	return 0
+}
+
+func (mp *hashtable) insert(x int){
+	if float64(mp.load) / float64(mp.size) >= 0.75{
+		mp.rehash()
+	}
+	insert(mp, x, 1)
+}
+
+func (mp *hashtable) count(x int) int{
+	return count(mp, x)
+}
+
+func (mp *hashtable) rehash(){
+	var _mp = newHashtable(mp.size * 2)
+	for i := 0; i < mp.size; i++{
+		if mp.t[i] > 0{
+			insert(_mp, mp.val[i], mp.t[i])
+		}
+	}
+	*mp = *_mp
+}
+
+func main() {
+	var mp hashtable
+	mp = *newHashtable(3)
+	mp.insert(1)
+	mp.insert(2)
+	mp.insert(1)
+	fmt.Println(mp.count(1))
+	fmt.Println(mp.count(2))
+}
