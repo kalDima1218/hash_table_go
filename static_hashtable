@@ -25,22 +25,25 @@ func h2(x, size int) int{
 	return 1 + x % (size - 2)
 }
 
-func insert(mp *hashtable, x, cnt int){
+func (mp *hashtable) insert(x int){
+	if float64(mp.load) / float64(mp.size) >= 0.75{
+		mp.rehash()
+	}
 	var i = h1(int(math.Abs(float64(x))), mp.size)
 	var d = h2(int(math.Abs(float64(x))), mp.size)
 	for mp.t[i] > 0{
 		if mp.val[i] == x{
-			mp.t[i]+=cnt
+			mp.t[i]+=1
 			return
 		}
 		i = (i + d)%mp.size
 	}
-	mp.t[i] = cnt
+	mp.t[i] = 1
 	mp.val[i] = x
 	mp.load++
 }
 
-func count(mp *hashtable, x int) int{
+func (mp *hashtable) count(x int) int{
 	var i = h1(int(math.Abs(float64(x))), mp.size)
 	var d = h2(int(math.Abs(float64(x))), mp.size)
 	for mp.t[i] > 0{
@@ -52,22 +55,11 @@ func count(mp *hashtable, x int) int{
 	return 0
 }
 
-func (mp *hashtable) insert(x int){
-	if float64(mp.load) / float64(mp.size) >= 0.75{
-		mp.rehash()
-	}
-	insert(mp, x, 1)
-}
-
-func (mp *hashtable) count(x int) int{
-	return count(mp, x)
-}
-
 func (mp *hashtable) rehash(){
 	var _mp = newHashtable(mp.size * 2)
 	for i := 0; i < mp.size; i++{
-		if mp.t[i] > 0{
-			insert(_mp, mp.val[i], mp.t[i])
+		for j := 0; j < mp.t[i]; j++{
+			_mp.insert(mp.val[i])
 		}
 	}
 	*mp = *_mp
