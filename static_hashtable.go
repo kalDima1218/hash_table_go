@@ -12,11 +12,11 @@ type HashTable struct{
 	t []int
 }
 
-func newHashTable() *HashTable {
+func newHashTable() HashTable {
 	var tmp HashTable
 	tmp.size, tmp.load = 3, 0
 	tmp.val, tmp.t = make([]int, 3), make([]int, 3)
-	return &tmp
+	return tmp
 }
 
 func hash(x int) int{
@@ -75,7 +75,7 @@ func (mp *HashTable) rehash(){
 
 func main() {
 	var mp HashTable
-	mp = *newHashTable()
+	mp = newHashTable()
 	for i := 0; i < 10; i++{
 		mp.insert(rand.Int()%10)
 	}
