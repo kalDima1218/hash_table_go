@@ -6,16 +6,19 @@ import (
 	"math/rand"
 )
 
+// Item is an interface that defines the hash function
 type Item interface {
-	hash()int
+	hash() int
 }
 
-type HashTable struct{
+// HashTable is a struct that represents a hash table
+type HashTable struct {
 	load, size int
-	val []Item
-	t []int
+	val        []Item
+	t          []int
 }
 
+// newHashTable creates a new hash table with default size
 func newHashTable() HashTable {
 	var tmp HashTable
 	tmp.size, tmp.load = 3, 0
@@ -24,6 +27,7 @@ func newHashTable() HashTable {
 	return tmp
 }
 
+// _newHashTableSized creates a new hash table with a given size
 func _newHashTableSized(size int) HashTable {
 	var tmp HashTable
 	tmp.size, tmp.load = size, 0
@@ -32,37 +36,41 @@ func _newHashTableSized(size int) HashTable {
 	return tmp
 }
 
-func h1(x, size int) int{
+// h1 is the first hash function
+func h1(x, size int) int {
 	return x % size
 }
 
-func h2(x, size int) int{
-	return 1 + x % (size - 2)
+// h2 is the second hash function
+func h2(x, size int) int {
+	return 1 + x%(size-2)
 }
 
-func (mp *HashTable) insert(x Item){
-	if float64(mp.load) / float64(mp.size) >= 0.5{
+// insert inserts an item into the hash table
+func (mp *HashTable) insert(x Item) {
+	if float64(mp.load)/float64(mp.size) >= 0.5 {
 		mp._rehash()
 	}
 	var i = h1(x.hash(), mp.size)
 	var d = h2(x.hash(), mp.size)
-	for mp.t[i] > 0{
-		if mp.val[i] == x{
-			mp.t[i]+=1
+	for mp.t[i] > 0 {
+		if mp.val[i] == x {
+			mp.t[i] += 1
 			return
 		}
-		i = (i + d)%mp.size
+		i = (i + d) % mp.size
 	}
 	mp.t[i] = 1
 	mp.val[i] = x
 	mp.load++
 }
 
-func (mp *HashTable) count(x Item) int{
+// count returns the number of occurrences of an item in the hash table
+func (mp *HashTable) count(x Item) int {
 	var i = h1(x.hash(), mp.size)
 	var d = h2(x.hash(), mp.size)
-	for mp.t[i] > 0{
-		if mp.val[i] == x{
+	for mp.t[i] > 0 {
+		if mp.val[i] == x {
 			return mp.t[i]
 		}
 		i = (i + d) % mp.size
@@ -70,56 +78,62 @@ func (mp *HashTable) count(x Item) int{
 	return 0
 }
 
-func (mp *HashTable) clear(){
+// clear clears the hash table
+func (mp *HashTable) clear() {
 	*mp = newHashTable()
 }
 
-func (mp *HashTable) _rehash(){
+// _rehash rehashes the hash table
+func (mp *HashTable) _rehash() {
 	var _mp HashTable
-	_mp.size, _mp.load = mp.size * 2, 0
-	_mp.val = make([]Item, mp.size * 2)
-	_mp.t = make([]int, _mp.size * 2)
-	for i := 0; i < mp.size; i++{
-		for j := 0; j < mp.t[i]; j++{
+	_mp.size, _mp.load = mp.size*2, 0
+	_mp.val = make([]Item, mp.size*2)
+	_mp.t = make([]int, _mp.size*2)
+	for i := 0; i < mp.size; i++ {
+		for j := 0; j < mp.t[i]; j++ {
 			_mp.insert(mp.val[i])
 		}
 	}
 	*mp = _mp
 }
 
-
-
-type ItemInt struct{
+// ItemInt is a struct that represents an integer item
+type ItemInt struct {
 	val int
 }
 
-func (i ItemInt)hash() int{
+// hash returns the hash value of an integer item
+func (i ItemInt) hash() int {
 	return int(math.Abs(float64(i.val)))
 }
 
-func newItemInt(x int) ItemInt{
+// newItemInt creates a new integer item
+func newItemInt(x int) ItemInt {
 	var tmp ItemInt
 	tmp.val = x
 	return tmp
 }
 
-type ItemString struct{
+// ItemString is a struct that represents a string item
+type ItemString struct {
 	val string
 }
 
-func (i ItemString)hash() int{
+// hash returns the hash value of a string item
+func (i ItemString) hash() int {
 	const b, m = 131, 1000000007
 	var h = 0
-	for _, c := range i.val{
-		h*=b
-		h%=m
-		h+=int(c+1)
-		h%=m
+	for _, c := range i.val {
+		h *= b
+		h %= m
+		h += int(c + 1)
+		h %= m
 	}
 	return h
 }
 
-func newItemString(x string) ItemString{
+// newItemString creates a new string item
+func newItemString(x string) ItemString {
 	var tmp ItemString
 	tmp.val = x
 	return tmp
@@ -137,11 +151,11 @@ func main() {
 
 	mp.clear()
 
-	for i := 0; i < 10; i++{
-		mp.insert(newItemInt(rand.Int()%10))
+	for i := 0; i < 10; i++ {
+		mp.insert(newItemInt(rand.Int() % 10))
 	}
-	for i := 0; i < 10; i++{
-		if mp.count(newItemInt(i)) > 0{
+	for i := 0; i < 10; i++ {
+		if mp.count(newItemInt(i)) > 0 {
 			fmt.Println(i, mp.count(newItemInt(i)))
 		}
 	}
